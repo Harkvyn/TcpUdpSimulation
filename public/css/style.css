@@ -1,0 +1,393 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TCP/UDP LAN Lab – Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Reset & tokens ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0d1117;
+  --bg2:         #161b22;
+  --bg3:         #21262d;
+  --border:      #30363d;
+  --text:        #e6edf3;
+  --text2:       #8b949e;
+  --text3:       #6e7681;
+  --tcp:         #388bfd;
+  --tcp-dim:     #1f4d8a;
+  --udp:         #f78166;
+  --udp-dim:     #7d2a1e;
+  --green:       #3fb950;
+  --green-dim:   #1a4a21;
+  --red:         #f85149;
+  --red-dim:     #5a1010;
+  --yellow:      #e3b341;
+  --yellow-dim:  #5a4010;
+  --purple:      #a371f7;
+  --radius:      10px;
+  --shadow:      0 4px 24px rgba(0,0,0,.45);
+}
+
+html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  padding: 0 24px;
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1400px; margin: 0 auto; height: 56px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { font-size: 24px; }
+.logo-title { font-size: 16px; font-weight: 700; display: block; }
+.logo-sub   { font-size: 11px; color: var(--text2); display: block; }
+.header-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.connected    { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.dot.disconnected { background: var(--red); }
+.dot.connecting   { background: var(--yellow); animation: pulse 1s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Main layout ─────────────────────────────────────────────────────────── */
+main {
+  display: flex; max-width: 1400px; margin: 0 auto;
+  height: calc(100vh - 56px); gap: 0; overflow: hidden;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 300px; min-width: 260px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+
+.card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.card h3 { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+
+/* info rows */
+.info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.info-row span { color: var(--text2); }
+.info-row strong { color: var(--text); font-weight: 600; font-family: monospace; }
+
+/* label + input */
+label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--text2); }
+input[type="text"], textarea {
+  background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit;
+  outline: none; transition: border-color .2s;
+}
+input[type="text"]:focus, textarea:focus { border-color: var(--tcp); }
+
+/* Range */
+.range-header { display: flex; justify-content: space-between; align-items: center; }
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px; background: var(--border); border-radius: 4px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--red); cursor: pointer;
+}
+
+/* Proto toggle */
+.proto-toggle { display: flex; gap: 4px; }
+.proto-btn {
+  flex: 1; padding: 6px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text2); border-radius: 6px;
+  cursor: pointer; font-weight: 600; font-size: 12px; transition: all .15s;
+}
+.proto-btn.active[data-proto="tcp"] { background: var(--tcp-dim); border-color: var(--tcp); color: var(--tcp); }
+.proto-btn.active[data-proto="udp"] { background: var(--udp-dim); border-color: var(--udp); color: var(--udp); }
+
+/* Proto info */
+.proto-detail { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.proto-detail ul { list-style: none; padding-left: 4px; display: flex; flex-direction: column; gap: 3px; color: var(--text2); }
+.proto-detail ul li::before { content: '›  '; color: var(--text3); }
+.proto-detail ul b { color: var(--text); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; }
+.badge.tcp { background: var(--tcp-dim); color: var(--tcp); }
+.badge.udp { background: var(--udp-dim); color: var(--udp); }
+.hidden { display: none !important; }
+
+/* Legend */
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+.pk { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.pk.sent    { background: var(--tcp-dim); border: 1px solid var(--tcp); }
+.pk.acked   { background: var(--green-dim); border: 1px solid var(--green); }
+.pk.dropped { background: var(--red-dim); border: 1px solid var(--red); }
+.pk.timeout { background: var(--yellow-dim); border: 1px solid var(--yellow); }
+
+/* ── Content area ────────────────────────────────────────────────────────── */
+.content {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── Topology bar ────────────────────────────────────────────────────────── */
+.topo-bar {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  padding: 12px 24px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.topo-node { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 90px; }
+.topo-icon { font-size: 28px; }
+.topo-label { font-size: 11px; text-align: center; color: var(--text2); line-height: 1.4; }
+.topo-label small { color: var(--text3); font-family: monospace; }
+
+.topo-link { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 320px; }
+.topo-wire {
+  width: 100%; height: 6px; background: var(--border); border-radius: 3px;
+  position: relative; overflow: hidden;
+}
+.wire-flow {
+  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--tcp), transparent);
+  border-radius: 3px; transition: background .3s;
+}
+.wire-flow.active-tcp { animation: wireAnim 1.2s linear infinite; background: linear-gradient(90deg, transparent, var(--tcp), transparent); }
+.wire-flow.active-udp { animation: wireAnim 0.8s linear infinite; background: linear-gradient(90deg, transparent, var(--udp), transparent); }
+@keyframes wireAnim { from { left: -60%; } to { left: 100%; } }
+
+.topo-proto-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text3);
+}
+
+/* ── Vis panel ───────────────────────────────────────────────────────────── */
+.vis-panel {
+  flex: 0 0 auto; max-height: 42vh; overflow-y: auto;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.vis-header {
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 5; flex-shrink: 0;
+}
+.vis-title { font-size: 12px; font-weight: 600; color: var(--text2); flex: 1; }
+.vis-stats { font-size: 11px; color: var(--text2); display: flex; gap: 14px; }
+.vis-stat  { display: flex; align-items: center; gap: 4px; }
+.btn-clear {
+  background: none; border: 1px solid var(--border); color: var(--text2);
+  border-radius: 5px; padding: 3px 10px; font-size: 11px; cursor: pointer;
+}
+.btn-clear:hover { border-color: var(--text); color: var(--text); }
+
+.vis-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 14px; }
+.vis-empty { color: var(--text3); font-size: 13px; text-align: center; padding: 24px 0; }
+
+/* ── Transmission group ──────────────────────────────────────────────────── */
+.tx-group {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.tx-header {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.tx-proto { font-weight: 700; font-family: monospace; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+.tx-proto.tcp { background: var(--tcp-dim); color: var(--tcp); }
+.tx-proto.udp { background: var(--udp-dim); color: var(--udp); }
+.tx-msg   { color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
+.tx-summary { margin-left: auto; display: flex; gap: 8px; font-size: 11px; }
+.tx-ok    { color: var(--green); }
+.tx-fail  { color: var(--red); }
+
+/* Layers explanation row */
+.tx-layers {
+  display: flex; align-items: stretch; gap: 0;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  font-size: 11px; color: var(--text2); background: var(--bg);
+  overflow-x: auto; gap: 4px;
+}
+.layer-block {
+  border: 1px solid var(--border); border-radius: 5px; padding: 5px 8px;
+  display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
+  min-width: 80px;
+}
+.layer-block .layer-name { font-weight: 600; color: var(--text3); font-size: 10px; text-transform: uppercase; }
+.layer-block .layer-val  { color: var(--text); font-family: monospace; }
+.layer-arrow { display: flex; align-items: center; color: var(--text3); font-size: 16px; padding: 0 2px; }
+
+/* Packets row */
+.tx-packets {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px;
+}
+
+/* Individual packet chip */
+.pkt {
+  position: relative; border-radius: 6px; cursor: pointer;
+  border: 1.5px solid transparent;
+  display: flex; flex-direction: column; overflow: hidden;
+  width: 64px; min-height: 52px;
+  transition: transform .1s, box-shadow .1s;
+  animation: pkAppear .25s ease;
+}
+@keyframes pkAppear { from { opacity:0; transform:scale(.7); } to { opacity:1; transform:scale(1); } }
+.pkt:hover { transform: scale(1.07); box-shadow: var(--shadow); z-index: 2; }
+
+.pkt-header-bar { font-size: 9px; font-weight: 700; text-align: center; padding: 2px 0; letter-spacing: .3px; }
+.pkt-body       { flex: 1; padding: 3px 4px; font-size: 9px; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+.pkt-index      { font-size: 11px; font-weight: 700; }
+.pkt-size       { opacity: .7; }
+.pkt-status-icon { font-size: 11px; }
+
+/* states */
+.pkt.state-pending  { background: var(--bg2); border-color: var(--tcp); }
+.pkt.state-pending .pkt-header-bar  { background: var(--tcp-dim); color: var(--tcp); }
+.pkt.state-acked    { background: var(--green-dim); border-color: var(--green); }
+.pkt.state-acked .pkt-header-bar    { background: #1a3a1f; color: var(--green); }
+.pkt.state-dropped  { background: var(--red-dim); border-color: var(--red); opacity: .75; }
+.pkt.state-dropped .pkt-header-bar  { background: #3a0f0f; color: var(--red); }
+.pkt.state-timeout  { background: var(--yellow-dim); border-color: var(--yellow); opacity: .8; }
+.pkt.state-timeout .pkt-header-bar  { background: #3a2f0f; color: var(--yellow); }
+
+/* UDP style */
+.pkt.udp-frag.state-pending  { border-color: var(--udp); }
+.pkt.udp-frag.state-pending .pkt-header-bar { background: var(--udp-dim); color: var(--udp); }
+.pkt.udp-frag.state-acked   { background: var(--green-dim); border-color: var(--green); }
+.pkt.udp-frag.state-dropped { background: var(--red-dim); border-color: var(--red); }
+
+/* flying animation */
+.pkt-flying {
+  position: fixed; pointer-events: none; z-index: 999;
+  width: 50px; height: 40px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: var(--tcp); color: #fff;
+  animation: flyPacket 0.7s ease-in forwards;
+}
+.pkt-flying.udp { background: var(--udp); }
+@keyframes flyPacket {
+  0%   { transform: scale(1);   opacity: 1; }
+  80%  { transform: scale(.6);  opacity: 1; }
+  100% { transform: scale(.3);  opacity: 0; }
+}
+
+/* ── Chat ────────────────────────────────────────────────────────────────── */
+.chat-panel {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--bg);
+}
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chat-system {
+  text-align: center; font-size: 12px; color: var(--text3);
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 14px;
+}
+.chat-bubble {
+  max-width: 70%; padding: 10px 14px; border-radius: 10px;
+  font-size: 13px; line-height: 1.5; word-break: break-word;
+}
+.chat-bubble.me {
+  align-self: flex-end;
+  background: var(--tcp-dim); border: 1px solid var(--tcp);
+  border-bottom-right-radius: 3px;
+}
+.chat-bubble.me.udp { background: var(--udp-dim); border-color: var(--udp); }
+.chat-bubble.them {
+  align-self: flex-start;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-bottom-left-radius: 3px;
+}
+.chat-bubble .bubble-meta {
+  font-size: 10px; color: var(--text3); margin-top: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.chat-bubble.me .bubble-meta { justify-content: flex-end; }
+
+.chat-input-row {
+  display: flex; gap: 8px; padding: 12px 16px;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+textarea {
+  flex: 1; resize: none; font-size: 13px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: inherit;
+  outline: none;
+}
+textarea:focus { border-color: var(--tcp); }
+
+.btn-send {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 0 18px;
+  background: var(--tcp); border: none; border-radius: 8px;
+  color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+  transition: background .2s, transform .1s;
+  min-width: 72px;
+}
+.btn-send:hover { background: #4d9fff; }
+.btn-send:active { transform: scale(.97); }
+.btn-send.udp { background: var(--udp); }
+.btn-send.udp:hover { background: #ffa090; }
+.btn-send kbd {
+  display: inline-block; background: rgba(0,0,0,.25); border-radius: 3px;
+  padding: 1px 5px; font-size: 10px; font-family: monospace;
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; width: 480px; max-width: 94vw; max-height: 80vh;
+  display: flex; flex-direction: column; box-shadow: var(--shadow);
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:scale(1); } }
+.modal-header {
+  display: flex; align-items: center; padding: 14px 16px;
+  border-bottom: 1px solid var(--border); gap: 8px;
+}
+.modal-header h3 { flex: 1; font-size: 14px; }
+.modal-header button {
+  background: none; border: none; color: var(--text2); font-size: 16px; cursor: pointer; padding: 2px 6px;
+}
+.modal-header button:hover { color: var(--red); }
+.modal-body { overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.modal-field { display: flex; flex-direction: column; gap: 2px; }
+.modal-field label { font-size: 10px; text-transform: uppercase; color: var(--text3); font-weight: 600; letter-spacing: .5px; }
+.modal-field .val  { font-family: monospace; font-size: 13px; color: var(--text); word-break: break-all; }
+
+.header-diagram {
+  display: flex; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+}
+.hd-field {
+  padding: 6px 8px; text-align: center; border-right: 1px solid var(--border);
+  font-size: 10px; flex-shrink: 0;
+}
+.hd-field:last-child { border-right: none; }
+.hd-field .hd-name  { color: var(--text3); font-size: 9px; text-transform: uppercase; }
+.hd-field .hd-val   { font-weight: 700; font-family: monospace; font-size: 12px; color: var(--text); }
+.hd-field.ip-hdr    { background: rgba(163,113,247,.12); }
+.hd-field.tcp-hdr   { background: rgba(56,139,253,.12); }
+.hd-field.udp-hdr   { background: rgba(247,129,102,.12); }
+.hd-field.data-fld  { background: rgba(63,185,80,.1); flex: 1; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .vis-panel { max-height: 35vh; }
+}

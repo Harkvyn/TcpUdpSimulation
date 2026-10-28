@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TCP/UDP LAN Lab – Visualisasi Protokol</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════ HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <div>
+        <span class="logo-title">TCP/UDP LAN Lab</span>
+        <span class="logo-sub">Simulasi Protokol Nyata via Jaringan Lokal</span>
+      </div>
+    </div>
+    <div class="header-status" id="connStatus">
+      <span class="dot disconnected"></span> Menghubungkan…
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════ MAIN -->
+<main>
+
+  <!-- ─── Panel Kiri: Kontrol + Info ─── -->
+  <aside class="sidebar">
+
+    <!-- Info Mesin -->
+    <div class="card" id="machineCard">
+      <h3>🖥 Info Mesin Ini</h3>
+      <div class="info-row"><span>IP Lokal</span><strong id="localIp">…</strong></div>
+      <div class="info-row"><span>MTU Ethernet</span><strong>1500 B</strong></div>
+      <div class="info-row"><span>MSS (TCP)</span><strong>1460 B</strong></div>
+      <div class="info-row"><span>Max UDP Payload</span><strong>1472 B</strong></div>
+    </div>
+
+    <!-- Pengaturan koneksi -->
+    <div class="card">
+      <h3>⚙ Pengaturan</h3>
+      <label>Protokol
+        <div class="proto-toggle">
+          <button class="proto-btn active" id="btnTcp" data-proto="tcp">TCP</button>
+          <button class="proto-btn" id="btnUdp" data-proto="udp">UDP</button>
+        </div>
+      </label>
+
+      <label>IP Tujuan (laptop lain)
+        <input type="text" id="targetIp" placeholder="contoh: 192.168.1.10" />
+      </label>
+
+      <label>
+        <div class="range-header">
+          <span>Simulasi Packet Loss</span>
+          <strong id="lossLabel">0%</strong>
+        </div>
+        <input type="range" id="lossRate" min="0" max="100" value="0" step="5" />
+      </label>
+
+      <div class="proto-info" id="protoInfo">
+        <div id="tcpInfo" class="proto-detail">
+          <div class="badge tcp">TCP</div>
+          <ul>
+            <li>Koneksi 3-way handshake</li>
+            <li>Data dipecah jadi <b>segmen</b> ≤ MSS (1460B)</li>
+            <li>Setiap segmen dapat <b>ACK</b></li>
+            <li>Retransmit jika timeout</li>
+          </ul>
+        </div>
+        <div id="udpInfo" class="proto-detail hidden">
+          <div class="badge udp">UDP</div>
+          <ul>
+            <li>Connectionless, header 8 byte</li>
+            <li>Data > MTU → IP-layer buat <b>fragmen</b></li>
+            <li>Tidak ada ACK otomatis</li>
+            <li>Fragmen hilang → seluruh datagram rusak</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend status paket -->
+    <div class="card">
+      <h3>📖 Legenda</h3>
+      <div class="legend-row"><span class="pk sent"></span>Dikirim (menunggu ACK)</div>
+      <div class="legend-row"><span class="pk acked"></span>ACK diterima ✓</div>
+      <div class="legend-row"><span class="pk dropped"></span>Dijatuhkan / Gagal ✗</div>
+      <div class="legend-row"><span class="pk timeout"></span>Timeout (tidak ada ACK)</div>
+    </div>
+
+  </aside>
+
+  <!-- ─── Panel Kanan: Chat + Visualisasi ─── -->
+  <section class="content">
+
+    <!-- Diagram topologi -->
+    <div class="topo-bar">
+      <div class="topo-node" id="topoSender">
+        <div class="topo-icon">💻</div>
+        <div class="topo-label">Pengirim<br/><small id="senderIpLabel">—</small></div>
+      </div>
+      <div class="topo-link">
+        <div class="topo-wire">
+          <div class="wire-flow" id="wireFlow"></div>
+        </div>
+        <div class="topo-proto-badge" id="topoBadge">—</div>
+      </div>
+      <div class="topo-node" id="topoReceiver">
+        <div class="topo-icon">💻</div>
+        <div class="topo-label">Penerima<br/><small id="receiverIpLabel">—</small></div>
+      </div>
+    </div>
+
+    <!-- Visualisasi paket aktif -->
+    <div class="vis-panel" id="visPanel">
+      <div class="vis-header">
+        <span class="vis-title">📦 Visualisasi Paket</span>
+        <div class="vis-stats" id="visStats"></div>
+        <button class="btn-clear" id="btnClear">Bersihkan</button>
+      </div>
+      <div class="vis-body" id="visBody">
+        <div class="vis-empty">Belum ada pengiriman. Kirim pesan untuk melihat visualisasi.</div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-panel">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-system">Selamat datang di TCP/UDP LAN Lab. Masukkan IP tujuan lalu kirim pesan.</div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="Ketik pesan… (Enter = kirim, Shift+Enter = baris baru)" rows="2"></textarea>
+        <button class="btn-send" id="btnSend">
+          <span>Kirim</span>
+          <kbd id="protoLabel">TCP</kbd>
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════ DETAIL MODAL -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Detail Paket</h3>
+      <button id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
